@@ -9,6 +9,9 @@
 import UIKit
 import SDWebImage
 
+protocol PlayerCellDelegate {
+    func playerImageAction(button:UIButton)
+}
 class PlayerTableViewCell: UITableViewCell {
 
     @IBOutlet weak var imgVwPlayer: UIImageView!
@@ -17,6 +20,8 @@ class PlayerTableViewCell: UITableViewCell {
     @IBOutlet weak var labelJumpNo: UILabel!
     @IBOutlet weak var labelStatsValue: UILabel!
     @IBOutlet weak var labelPosition: UILabel!
+    
+    var delegate:PlayerCellDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -43,4 +48,7 @@ class PlayerTableViewCell: UITableViewCell {
         labelPosition.text = playerModel.playerPosition
     }
 
+    @IBAction func btnPlayerTapped(_ sender: UIButton) {
+        delegate?.playerImageAction(button: sender)
+    }
 }

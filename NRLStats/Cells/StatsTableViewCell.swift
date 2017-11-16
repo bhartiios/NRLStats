@@ -7,16 +7,23 @@
 //
 
 import UIKit
+import Charts
 
-class StatsTableViewCell: UITableViewCell, UITableViewDataSource, UITableViewDelegate {
+protocol StatsCellDelegate {
+    func playerCellSelected(forTeam:TeamModel?, indexPath:NSIndexPath)
+}
+class StatsTableViewCell: UITableViewCell, UITableViewDataSource, UITableViewDelegate, PlayerCellDelegate {
 
     @IBOutlet weak var labelTeamA: UILabel!
     @IBOutlet weak var labelTeamB: UILabel!
     @IBOutlet weak var tableAPlayers: UITableView!
     @IBOutlet weak var tableBPlayers: UITableView!
+    @IBOutlet weak var pieChartTeamA: PieChartView!
+    @IBOutlet weak var pieChartTeamB: PieChartView!
     
     var teamA:TeamModel?
     var teamB:TeamModel?
+    var delegate:StatsCellDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -30,7 +37,7 @@ class StatsTableViewCell: UITableViewCell, UITableViewDataSource, UITableViewDel
 
     //MARK:- Custom Methods
     
-    /// Fill cellanimated
+    /// Fill cell
     ///
     /// - Parameters:
     ///   - teamModelA: model of team A
@@ -43,6 +50,9 @@ class StatsTableViewCell: UITableViewCell, UITableViewDataSource, UITableViewDel
         
         tableAPlayers.reloadData()
         tableBPlayers.reloadData()
+        
+        updateChartData(forTeam: teamModelA, pieChartStats: pieChartTeamA)
+        updateChartData(forTeam: teamModelB, pieChartStats: pieChartTeamB)
     }
     
     /// Get team model on the basis of current Table
@@ -57,6 +67,71 @@ class StatsTableViewCell: UITableViewCell, UITableViewDataSource, UITableViewDel
         return teamB
     }
     
+    func updateChartData(forTeam:TeamModel, pieChartStats:PieChartView)  {
+        
+        var arrEnteries = [PieChartDataEntry]()
+        for (_, player) in forTeam.teamTopPlayers.enumerated() {
+            let entry = PieChartDataEntry()
+            entry.y = Double(player.playerStatValue)
+            entry.label = player.playerShortName.components(separatedBy: " ").last
+            arrEnteries.append( entry)
+        }
+        
+        // 3. chart setup
+        let set = PieChartDataSet( values: arrEnteries, label: "Pie Chart")
+        set.valueFont = NSUIFont.systemFont(ofSize: 12)
+        set.entryLabelFont = NSUIFont.systemFont(ofSize: 10)
+        
+        var colors: [UIColor] = []
+        //Add random color to players
+        for _ in 0..<forTeam.teamTopPlayers.count {
+            colors.append(getRandomColor())
+        }
+        set.colors = colors
+        let data = PieChartData(dataSet: set)
+        pieChartStats.data = data
+        // user interaction false to increase the size of pie chart
+        pieChartStats.isUserInteractionEnabled = false
+        
+        let desc = Description()
+        desc.text = "Top Player's Statistics Piechart"
+        pieChartStats.chartDescription = desc
+        pieChartStats.holeRadiusPercent = 0.2
+        pieChartStats.legend.enabled = false
+        pieChartStats.transparentCircleColor = UIColor.clear
+        
+        pieChartStats.rotationEnabled = true
+        pieChartStats.animate(xAxisDuration: 1.0, yAxisDuration: 1.0, easingOption: .easeInBounce)
+    }
+    
+    /// Get random colors for player's stats in piechart
+    ///
+    /// - Returns: UIColor
+    func getRandomColor()->UIColor{
+        let red = Double(arc4random_uniform(256))
+        let green = Double(arc4random_uniform(256))
+        let blue = Double(arc4random_uniform(256))
+        let color = UIColor(red: CGFloat(red/255), green: CGFloat(green/255), blue: CGFloat(blue/255), alpha: 1)
+        return color
+    }
+    
+    //MARK:- Player Cell Delegate
+    
+    func playerImageAction(button: UIButton) {
+        guard let table = button.superview?.superview?.superview as? UITableView else {
+            return
+        }
+        
+        guard let indexPath = table.indexPath(for: button.superview?.superview as! UITableViewCell) as NSIndexPath? else{
+            return
+        }
+        
+        if table == tableAPlayers{
+            self.delegate?.playerCellSelected(forTeam: teamA, indexPath: indexPath)
+        } else{
+            self.delegate?.playerCellSelected(forTeam: teamB, indexPath: indexPath)
+        }
+    }
     //MARK:- UITableView Delegate & Datasource
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -78,6 +153,8 @@ class StatsTableViewCell: UITableViewCell, UITableViewDataSource, UITableViewDel
         guard let player = getTeamModel(table: tableView)?.teamTopPlayers[indexPath.row] else {
             return UITableViewCell()
         }
+        cell.selectionStyle = UITableViewCellSelectionStyle.none
+        cell.delegate = self
         cell.fillPlayerCell(playerModel: player)
         return cell
     }

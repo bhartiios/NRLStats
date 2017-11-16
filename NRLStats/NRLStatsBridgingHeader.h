@@ -10,4 +10,6 @@
 #define NRLStatsBridgingHeader_h
 
 #import <SDWebImage/UIImageView+WebCache.h>
+#import "MBProgressHUD.h"
+
 #endif /* NRLStatsBridgingHeader_h */
