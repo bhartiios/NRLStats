@@ -15,6 +15,10 @@ struct TeamModel {
     var teamShortName = ""
     var teamTopPlayers = [PlayerModel]()
 
+    
+    /// Fill Model from server data
+    ///
+    /// - Parameter dictTeam: Dictionary
     mutating func fillTeamData(dictTeam:[String:Any]){
         
         if let id = dictTeam["id"] as? NSNumber{
@@ -34,7 +38,7 @@ struct TeamModel {
         }
         
         if let arrTopPlayers = dictTeam["top_players"] as? [[String:Any]]{
-            
+            //Add players model in array of top players
             for dictPlayer in arrTopPlayers{
                 var player = PlayerModel()
                 player.fillPlayerData(dictPlayer: dictPlayer)

@@ -9,14 +9,19 @@
 import Foundation
 
 struct MatchModel {
-    var matchId:Int = 0
-    var matchTeams = [TeamModel]()
+    var matchId = ""
+    var matchTeamA = TeamModel()
+    var matchTeamB = TeamModel()
     var matchStatType = ""
     
+    
+    /// Fill Model from server data
+    ///
+    /// - Parameter dictMatch: Dictionary
     mutating func fillMatchData(dictMatch:[String:Any]){
         
-        if let id = dictMatch["match_id"] as? NSNumber{
-            matchId = id.intValue
+        if let id = dictMatch["match_id"] as? String{
+            matchId = id
         }
         
         if let statType = dictMatch["stat_type"] as? String{
@@ -26,13 +31,13 @@ struct MatchModel {
         if let teamA = dictMatch["team_A"] as? [String:Any]{
             var team = TeamModel()
             team.fillTeamData(dictTeam: teamA)
-            matchTeams.append(team)
+            matchTeamA = team
         }
         
-        if let teamA = dictMatch["team_B"] as? [String:Any]{
+        if let teamB = dictMatch["team_B"] as? [String:Any]{
             var team = TeamModel()
-            team.fillTeamData(dictTeam: teamA)
-            matchTeams.append(team)
+            team.fillTeamData(dictTeam: teamB)
+            matchTeamB = team
         }
     }
 }

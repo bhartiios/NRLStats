@@ -16,6 +16,11 @@ struct PlayerModel {
     var playerStatValue = 0
     var playerJumperNo = 0
     
+    //Player Full Details
+    
+    /// Fill Model from server data
+    ///
+    /// - Parameter dictPlayer: Dictionary
     mutating func fillPlayerData(dictPlayer:[String:Any]){
         
         if let id = dictPlayer["id"] as? NSNumber{
